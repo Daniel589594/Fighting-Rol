@@ -5,14 +5,15 @@ from time import sleep
 import os
 from dropgen.RDSTable import RDSTable
 from dropgen.RDSItem import RDSItem
-
-jugadores = ["Cpu"]
-#6-Clase Mapa
+jugadores = {} #Este diccionario contiene la clave con el nombre del jugador y sus valores contienen su numero de Partidas y Victorias
+#6-Clase Mapa 
 class Mapa_Bioma_Bosque:
     def __ini__(self):
         pass
+
+#Clase: Base para heredar a las demas clases 
 class Base_estadisticas:
-    def __init__(self, nombre):  #Clase a explotar (se usara para todas las demas clases las cuales seran hijo de esta clase padre
+    def __init__(self, nombre):  
         self.nombre = nombre
         self.vida = 0
         self.ataque = 0
@@ -23,9 +24,9 @@ class Base_estadisticas:
         self.Inventario = []
         self.Fabricacion = []
         
-#5-Clase Personaje
+#Clase: Personaje que contiene sus propios atributos y habilidades de momento...
 class Personaje_humano(Base_estadisticas): 
-    def __init__(self, nombre):  #Aqui se le asigna los valores a nuestra clase personaje, de la cual se apoya por el padre: Base_estadisticas
+    def __init__(self, nombre): 
         super().__init__(nombre) 
         self.ataque = random.randint(2,6)
         self.vida = random.randint(20,35)
@@ -47,7 +48,7 @@ class Personaje_humano(Base_estadisticas):
             self.barra = "[==========]" 
         print(f"-_-_-Humano de {self.nombre}-_-_-\nVida: {self.vida}->{self.barra}  Defensa añadida: {self.defensa_añadida}\nAtaque: {self.ataque}\nDefensa: {self.defensa}\nVelocidad: {self.velocidad}")
         try:
-            Opcion_jugador = int(input(f"""{10*"="}Menu{10*"="}\n[1] Atacar\n[2] Inspeccionar\n[3] Defender\n[4] Inventario y Fabricar\nElige: """))
+            Opcion_jugador = int(input(f"\n{10*"="}Menu{10*"="}\n[1] Atacar\n[2] Inspeccionar\n[3] Defender\n[4] Inventario y Fabricar\nElige: "))
         except ValueError:
             print(f"{50*"="}\nFavor de ingresar valor numerico\n{50*"="}")
             sleep(2)
@@ -165,7 +166,7 @@ class Personaje_humano(Base_estadisticas):
                 print("Este objeto no existe...")
                 sleep(2) 
     
-#6-Funcion para la partida (ahora si gameplay)
+#Funcion: Inicia el juego 
 def Jugar(jugador_1,jugador_2):
     jugador1 = Personaje_humano(jugador_1)
     jugador2 = Personaje_humano(jugador_2)
@@ -173,13 +174,19 @@ def Jugar(jugador_1,jugador_2):
         jugador1.perfil_humano(jugador2)
         if not jugador2.estado:
             print(f"Ganador: {jugador1.nombre}")
+            nombre_jugador = jugador1.nombre
+            jugadores[nombre_jugador][1]+=1 #Partida Ganada, suma un punto 
+            sleep(3)
             break
         jugador2.perfil_humano(jugador1)
         if not jugador1.estado:
             print(f"Ganador: {jugador2.nombre}")
+            nombre_jugador = jugador2.nombre
+            jugadores[nombre_jugador][1]+=1 #Partida Ganada, suma un punto
+            sleep(3)
             break
         
-#2-Opcion 1 (Jugar)
+#Menu Principal [Opcion 1]: Se inicia la confirmacion de jugadores existentes para empezar la partida
 def Inicio_juego():
     while True:
         os.system("cls")
@@ -206,11 +213,12 @@ def Inicio_juego():
             nom_jugador = input("Nombre Jugador: ")
             if nom_jugador in jugadores:
                 print(60*"=")
-                print("[Si no hay jugador 2, ingresa [X] para omitir]")
+                print("[Si no hay jugador 2, ingresa [X] para omitir]") #PROXIMAMENTE, Falta implementacion
                 nom_jugador_2 = input("Nombre Jugador 2: ")
                 if nom_jugador_2 == "X" or nom_jugador_2 == "x":
                     print(f"\nModo solitario: [{nom_jugador}] vs [Cpu]")
                     nom_jugador_2 = "Cpu"
+                    #Por checar
                     sleep(2)
                     os.system("cls")
                     for count in range(3,0,-1):
@@ -225,6 +233,10 @@ def Inicio_juego():
                     return
                 elif nom_jugador_2 in jugadores:
                     print(f"\nJugadores encontrados: [{nom_jugador}] vs [{nom_jugador_2}]")
+                    nombre_jugador = nom_jugador
+                    jugadores[nombre_jugador][0]+=1 #Se suma un punto referencia al numero de partidas 
+                    nombre_jugador = nom_jugador_2
+                    jugadores[nombre_jugador][0]+=1 #Se suma un punto referencia al numero de partidas
                     sleep(2)
                     os.system("cls")
                     for count in range(3,0,-1):
@@ -244,7 +256,7 @@ def Inicio_juego():
                 print("El jugador no se encuentra registrado")
                 sleep(3)
         
-#3-Opcion 2 (Registrar nombre del jugador)
+#Menu Principal [opcion 2}: Registro del jugador  
 def Registro_jugador():
     os.system("cls")
     print("-_-_-_Ingresa tu nombre Jugador_-_-_-_\n[-En caso de querer cancelar el registro ingrese [B]-]\n") 
@@ -253,31 +265,42 @@ def Registro_jugador():
         return     
     elif nombre_jugador not in jugadores:
         print("Registrando jugador...%")
-        jugadores.append(nombre_jugador)
+        jugadores[nombre_jugador] = [0,0] #0: Partidas, 0: Victorias
         sleep(1)
         os.system("cls")
-        print(66*"=")
-        print(f"Nombre del Jugador: [{nombre_jugador}]\nCantidad de Jugadores Registrados (globalmente, contando CPU): [{len(jugadores)}]")
-        print(66*"=")
+        print(50*"=")
+        print(f"Nombre del Jugador: [{nombre_jugador}]\nCantidad de Jugadores Registrados: [{len(jugadores)}]")
+        print(50*"=")
         pausa = input("...")
-        return
+        return 
     else:
         print(f"\n[El nombre/jugador: [{nombre_jugador}] a registrar se encuentra duplicado]\nPor lo cuál el registro se omitirá...")
         sleep(5)
         os.system("cls")
         
-#4-Opcion 3 (Vista de todos los jugadores)
+#Menu Principal [opcion 3]: Vista de todos los jugadores registrados, partidas y victorias
 def Vista_jugadores():
     os.system("cls")
-    jugadores_nom = len(jugadores)
-    if jugadores_nom != 1:
-        contador = 0 
+    cantidad_registros = len(jugadores)
+    if cantidad_registros != 0:
+        contador = 1 
         print("-_-_-_JUGADORES REGISTRADOS_-_-_-")
-        for elemento in jugadores:
-            print(32*"=")
-            print(f"{contador}-- [{elemento}]")
-            contador +=1
-            sleep(0.4)
+        for clave, valor in jugadores.items():
+            if valor[0] > 0 and valor[1] == 0: 
+                print(32*"=")
+                print(f"{contador}-Jugador:{clave}\nPartidas jugadas:{valor[0]} Victoria(s):{valor[1]}\n{32*"="}")
+                contador +=1
+                sleep(0.4) 
+            elif valor[0] > 0 and valor[1] > 0: 
+                print(32*"=")
+                print(f"{contador}-Jugador:{clave}\nPartidas jugadas:{valor[0]} Victoria(s):{valor[1]}\n{32*"="}")
+                contador +=1
+                sleep(0.4)
+            else:
+                print(32*"=")
+                print(f"{contador}-Jugador:{clave}\nSin partidas... Sin victorias...\n{32*"="}")
+                contador +=1
+                sleep(0.4)    
         else:
             continuar = input("\ningresa Enter para continuar")
     else:
@@ -286,10 +309,10 @@ def Vista_jugadores():
         sleep(2.5)
         return
 
-#5- Opcion 4 (Editar o eliminar nombre del jugador)
+#Menu Principal [opcion 4]: Edita o elimina el registro de un jugador
 def Editar_eliminar_nombre_jugador():
     cantidad_jugadores = len(jugadores)
-    if cantidad_jugadores !=1:
+    if cantidad_jugadores !=0:
         os.system("cls")
         print(25*"-_",end="")
         print(f"\n{50*"="}")
@@ -335,7 +358,7 @@ def Editar_eliminar_nombre_jugador():
         print("No hay Jugadores registrados aún")
         sleep(2.5)
         return
-#6- Opcion 5 (guarda los datos en un archivo csv)
+#Menu Principal [opcion 5]: Guarda todo el estado en formato csv
 def Guardado_csv():
     with open ("Video_Juego_Oficial.csv","w", encoding="latin1", newline="") as Archivo_Juego:
         escritor = csv.writer(Archivo_Juego)
@@ -350,7 +373,7 @@ def Guardado_csv():
     sleep(1)
     return
 
-#7- Opcion 6 (Carga los datos de un csv)
+#Menu Principal [opcion 6]: Lee el ultimo estado guardado en formato csv 
 def Cargar_csv():
     try:
         with open("Video_Juego_Oficial.csv","r",encoding="latin1",newline="") as Archivo_juego:
@@ -364,7 +387,7 @@ def Cargar_csv():
         for letra in mensaje:
             print(letra, end="", flush=True)
             sleep(0.2)
-        print(f"\n{len(jugadores)-1} datos cargados")   
+        print(f"\n{len(jugadores)} datos cargados")   
         sleep(2)
 
     except FileNotFoundError:
@@ -372,7 +395,7 @@ def Cargar_csv():
         sleep(2)
     return 
                 
-#1-Menu principal
+#Menu principal: contiene todas las opciones para que el usuario ingrese
 def main():
     while True:
         os.system("cls")
@@ -412,7 +435,7 @@ def main():
         
 
 
-#Comienzo del inicio del programa (no juego)
+#Inicio del programa: Se muestra el titulo
 print(f"{17*"="}\n== FightingRol ==\n{17*"="}")
 sleep(2)
 os.system("cls")
