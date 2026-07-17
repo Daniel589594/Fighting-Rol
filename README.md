@@ -18,7 +18,7 @@
  -Internamente en el codigo se agregaron comentarios mas atractivos y mayormente legibles a los anteriores
  -Cpu ya no forma parte de la lista jugadores al mostrar
 
- # En Desarrollo:
+# En Desarrollo:
  -Falta pulir algunos aspectos visuales para ser algo en terminal (menus, datos, etc)
  -Falta agregar mapas y mas personajes (clases)
  -Falta implementar un Combate real con Cpu
@@ -27,3 +27,20 @@
  -Falta reconstruir nuevamente la estructura al guardar y cargar datos debido al reemplazo de lista por diccionario para el nuevo sistema implementado
  -Hay bug curioso al tener un jugador con vida en valor negativo sobre la vida, la cual le permite volver a usar turno
  -Si por error se ingresa un valor de texto durante la seleccion del menu en partida, este se crashea
+ -------------------------------------------------------------------------------------------------------------------------------------------------------
+ # Fighting-Rol (Version 0.3)
+ Detalles de la actualizacion:
+ -Implementacion del mapa (ambiente) durante el combate (Falta pulir)
+ -Primera implementacion de un tercer combatiente inesperado (los animales del mapa)
+
+ # En Desarrollo:
+ -Falta corregir totalmente la carga del archivo csv si es que este existe
+ -Falta implementar un Combate real con Cpu
+ -Falta agregar mas mapas y animales
+
+ # Por corregir:
+ -Corregir la carga del csv
+ -terminar e implementar el mapa y animal en el combate
+ -Hay bug curioso al tener un jugador con vida en valor negativo sobre la vida, la cual le permite volver a usar turno
+ -Si por error se ingresa un valor de texto durante la seleccion del menu en partida, este se crashea
+ 
