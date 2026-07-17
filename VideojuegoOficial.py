@@ -3,13 +3,37 @@ import random
 import time 
 from time import sleep
 import os
-from dropgen.RDSTable import RDSTable
-from dropgen.RDSItem import RDSItem
+
 jugadores = {} #Este diccionario contiene la clave con el nombre del jugador y sus valores contienen su numero de Partidas y Victorias
-#6-Clase Mapa 
-class Mapa_Bioma_Bosque:
+
+#Clase: Se le asigna a los animales sus valores por default que pueden heredar a la clase: Animales
+class Animal:
+    def __init__(self):
+        self.vida_animal = 0
+        self.ataque = 0
+        
+#Clase: Animales que perteneceran a su respectivo bioma
+class Oso_pardo(Animal): #Pertenece al bioma de bosque
+    def __init__(self):
+        super().__init__(self)
+        self.vida_animal = (150,300)
+        self.mordida = (20,30) #Puede aplicar sangrado
+        self.garrazo = (15,25) #puede dejar inmovil al jugador atacado
+        self.se_aleja = (1,2) #se queda aun luchando o se va
+        self.ha_escuchado = (0,1) #han captado la atencion del oso 
+        self.aparicion = (0,10) #probabilidad de que haya un oso en el escenario (distraido u observando)        
+        
+        
+
+#Clase: Mapa que contendra sus materiales alrededor e incluso animales peligrosos 
+class Mapa_Bioma:
     def __ini__(self):
-        pass
+        self.bioma = ["Bosque", #lista que contiene diversos mapa, cada mapa tendra una def con su funcion
+                      "Tundra Polar",
+                      "Desierto",
+                      "Manglar salvaje"]
+        self.inspeccion = {} #Materiales u objetos dispersos en el mapa
+        self.animales = {}
 
 #Clase: Base para heredar a las demas clases 
 class Base_estadisticas:
@@ -21,15 +45,17 @@ class Base_estadisticas:
         self.defensa_añadida = 0
         self.estado = True #vivo
         self.barra = None
-        self.Inventario = []
-        self.Fabricacion = []
+        self.Inventario = {}
+        self.Fabricacion = {}
+        self.Inspeccion = {}
         
 #Clase: Personaje que contiene sus propios atributos y habilidades de momento...
 class Personaje_humano(Base_estadisticas): 
     def __init__(self, nombre): 
         super().__init__(nombre) 
-        self.ataque = random.randint(2,6)
-        self.vida = random.randint(20,35)
+        self.ataque_puño = random.randint(2,6)
+        self.ataque_patada = random.randint(4,8)
+        self.vida = random.randint(50,100)
         self.vida_maxima = self.vida
         self.defensa = random.randint(0,5)
         self.velocidad = random.randint(1,10)
@@ -44,8 +70,8 @@ class Personaje_humano(Base_estadisticas):
             return
         elif self.vida <= self.vida_maxima/2:
             self.barra = "[=====     ]"
-        elif self.vida == self.vida_maxima or self.vida > self.vida_maxima/2:
-            self.barra = "[==========]" 
+        elif self.vida == self.vida_maxima or self.vida > self.vida_maxima/2: 
+            self.barra = "[==========]"
         print(f"-_-_-Humano de {self.nombre}-_-_-\nVida: {self.vida}->{self.barra}  Defensa añadida: {self.defensa_añadida}\nAtaque: {self.ataque}\nDefensa: {self.defensa}\nVelocidad: {self.velocidad}")
         try:
             Opcion_jugador = int(input(f"\n{10*"="}Menu{10*"="}\n[1] Atacar\n[2] Inspeccionar\n[3] Defender\n[4] Inventario y Fabricar\nElige: "))
@@ -54,52 +80,71 @@ class Personaje_humano(Base_estadisticas):
             sleep(2)
             os.system("cls")
         if Opcion_jugador == 1:
-            if self.defensa_añadida <= 0:
-                golpe_critico_o_debil = random.randint(int(-self.ataque/2),int(self.ataque/2))
-                if golpe_critico_o_debil < 0:
-                    daño_real = self.ataque+golpe_critico_o_debil
-                    print(f"Daño de ataque: {daño_real}\nOh no, un golpe debil!!!")
-                    vida_reciente = rival.vida
-                    rival.vida -= daño_real
-                    print(f"Su vida paso de {vida_reciente} pasó a {rival.vida}")
+            while True:
+                try:
+                    os.system("cls")
+                    print(f"{40*"="}\n[Elige tu ataque]\n[1] Puño\n [2] Patada\n{40*"="}")    
+                    tipo_ataque = int(input("Tipo: "))
+                except ValueError:
+                    print(f"{40*"="}\nNo se permite textos o simbolos\n{40*"="}")
+                else:
+                    pass
+                if tipo_ataque == 1:
+                    self.ataque = self.ataque_puño
+                    break
+                elif tipo_ataque == 2:
+                    self.ataque = self.ataque_patada
+                    break
+                else:
+                    os.system("cls")
+                    print("Elige una opcion existente")
                     sleep(3)
-                elif golpe_critico_o_debil > 0:
-                    daño_real = self.ataque+golpe_critico_o_debil
-                    print(f"Daño de ataque: {daño_real}\nWow, fue un golpe critico!!!")
-                    vida_reciente = rival.vida
-                    rival.vida -= daño_real
-                    print(f"Su vida paso de {vida_reciente} pasó a {rival.vida}")
-                    sleep(3)
-                elif golpe_critico_o_debil == 0:
-                    print(f"Daño de ataque: {self.ataque}")
-                    rival.vida -= self.ataque
-                    print(f"Su vida de {self.vida}")
-                    sleep(3) 
-                os.system("cls")
-            elif self.defensa_añadida > 0:
-                golpe_critico_o_debil = random.randint(int(-self.ataque/2),int(self.ataque/2))
-                if golpe_critico_o_debil < 0:
-                    daño_real = self.ataque+golpe_critico_o_debil
-                    print(f"Daño de ataque: {daño_real}\nOh no, un golpe debil!!!")
-                    defensa_acumulada = rival.defensa_añadida
-                    rival.defensa_añadida -= daño_real
-                    print(f"Su defensa de {defensa_acumulada} pasó a {rival.defensa_añadida}")
-                    sleep(3)
-                elif golpe_critico_o_debil > 0:
-                    daño_real = self.ataque+golpe_critico_o_debil
-                    print(f"Daño de ataque: {daño_real}\nWow, fue un golpe critico!!!")
-                    defensa_acumulada = rival.defensa_añadida
-                    rival.defensa_añadida -= daño_real 
-                    print(f"Su defensa de {defensa_acumulada} pasó a {rival.defensa_añadida}") 
-                    sleep(3)
-                elif golpe_critico_o_debil == 0:
-                    daño_real = self.ataque
-                    print(f"Daño de ataque: {daño_real}")
-                    defensa_acumulada = rival.defensa_añadida
-                    rival.defensa_añadida -= daño_real
-                    print(f"Su defensa de {self.defensa_añadida} paso a {rival.defensa_añadida}")
-                    sleep(3)  
-                os.system("cls")
+                if self.defensa_añadida <= 0:
+                    golpe_critico_o_debil = random.randint(int(-self.ataque/2),int(self.ataque/2))
+                    if golpe_critico_o_debil < 0:
+                        daño_real = self.ataque+golpe_critico_o_debil
+                        print(f"{45*"="}\nDaño de ataque: {daño_real}\nOh no, un golpe debil!!!")
+                        vida_reciente = rival.vida
+                        rival.vida -= daño_real
+                        print(f"la vida del rival paso de {vida_reciente} a {rival.vida}\n{45*"="}")
+                        sleep(3)
+                    elif golpe_critico_o_debil > 0:
+                        daño_real = self.ataque+golpe_critico_o_debil
+                        print(f"{45*"="}\nDaño de ataque: {daño_real}\nWow, fue un golpe critico!!!")
+                        vida_reciente = rival.vida
+                        rival.vida -= daño_real
+                        print(f"la vida del rival pasó de {vida_reciente} a {rival.vida}\n{45*"="}")
+                        sleep(3)
+                    elif golpe_critico_o_debil == 0:
+                        print(f"{45*"="}\nDaño de ataque: {self.ataque}")
+                        rival.vida -= self.ataque
+                        print(f"la vida del rival pasó de {vida_reciente} a {rival.vida}\n{45*"="}")
+                        sleep(3) 
+                    os.system("cls")
+                elif self.defensa_añadida > 0:
+                    golpe_critico_o_debil = random.randint(int(-self.ataque/2),int(self.ataque/2))
+                    if golpe_critico_o_debil < 0:
+                        daño_real = self.ataque+golpe_critico_o_debil
+                        print(f"{45*"="}\nDaño de ataque: {daño_real}\nOh no, un golpe debil!!!")
+                        defensa_acumulada = rival.defensa_añadida
+                        rival.defensa_añadida -= daño_real
+                        print(f"la defensa del rival pasó de {defensa_acumulada}  a {rival.defensa_añadida}\n{45*"="}")
+                        sleep(3)
+                    elif golpe_critico_o_debil > 0:
+                        daño_real = self.ataque+golpe_critico_o_debil
+                        print(f"{45*"="}\nDaño de ataque: {daño_real}\nWow, fue un golpe critico!!!")
+                        defensa_acumulada = rival.defensa_añadida
+                        rival.defensa_añadida -= daño_real 
+                        print(f"la defensa del rival pasó de {defensa_acumulada} a {rival.defensa_añadida}\n{45*"="}") 
+                        sleep(3)
+                    elif golpe_critico_o_debil == 0:
+                        daño_real = self.ataque
+                        print(f"Daño de ataque: {daño_real}")
+                        defensa_acumulada = rival.defensa_añadida
+                        rival.defensa_añadida -= daño_real
+                        print(f"la defensa del rival pasó de {self.defensa_añadida} paso a {rival.defensa_añadida}\n{45*"="}")
+                        sleep(3)  
+                        os.system("cls")
         elif Opcion_jugador == 2:
             self.Inspeccion_humano()
         elif Opcion_jugador == 3:
@@ -111,11 +156,18 @@ class Personaje_humano(Base_estadisticas):
         return
     
     def Inspeccion_humano(self):
-        self.inspeccion = ["Rama de Madera", "Rama de Madera con Filo", 
-        "piedra pequeña", "piedra mediana", "Tierra"]
+        self.inspeccion = {"Rama de Madera":[0,0], #0:probabilidad, 0:cantidad IMPLEMENTAR ESTO CON DICCIONARIO
+                           "Rama de Madera con Filo":[0,0],
+                           "Piedra Pequeña":[0,0],
+                           "Piedra Mediana":[0,0],
+                           "Tierra":[0,0],
+                           "Lodo":[0,0],
+                           "Liana":[0,0],
+                           "no se encontró nada":[20]}
         objeto_encontrado = random.choice(self.inspeccion)
         print(f"Ha encontrado: {objeto_encontrado}")
-        self.Inventario.append(objeto_encontrado)
+        cantidad = random.randint(objeto_encontrado)
+        self.Inventario[objeto_encontrado] = [0,0] #1:Cantidad, 0:encontrada
         sleep(2)
         os.system("cls")
         return 
@@ -177,14 +229,14 @@ def Jugar(jugador_1,jugador_2):
             nombre_jugador = jugador1.nombre
             jugadores[nombre_jugador][1]+=1 #Partida Ganada, suma un punto 
             sleep(3)
-            break
+            return
         jugador2.perfil_humano(jugador1)
         if not jugador1.estado:
             print(f"Ganador: {jugador2.nombre}")
             nombre_jugador = jugador2.nombre
             jugadores[nombre_jugador][1]+=1 #Partida Ganada, suma un punto
             sleep(3)
-            break
+            return
         
 #Menu Principal [Opcion 1]: Se inicia la confirmacion de jugadores existentes para empezar la partida
 def Inicio_juego():
@@ -362,9 +414,9 @@ def Editar_eliminar_nombre_jugador():
 def Guardado_csv():
     with open ("Video_Juego_Oficial.csv","w", encoding="latin1", newline="") as Archivo_Juego:
         escritor = csv.writer(Archivo_Juego)
-        escritor.writerow(["jugadores"])
-        for nombre_jugador in jugadores:
-            escritor.writerow([nombre_jugador])
+        escritor.writerow(["Jugador","Partidas", "Victorias"])
+        for nombre_jugador, stats, in jugadores.items():
+            escritor.writerow([nombre_jugador, stats[0],stats[1]])
     mensaje = "Creando Archivo..."
     for letra in mensaje:
         print(letra,end="",flush=True)
@@ -380,10 +432,10 @@ def Cargar_csv():
             lector = csv.reader(Archivo_juego)
             next(lector)
             for fila in lector:
-                nombre = fila[0]
-                if nombre not in jugadores:
-                    jugadores.append(nombre)
-        mensaje = "Cargando datos..."
+                jugadores[nombre_jugador] = [0,0]
+                if nombre_jugador not in jugadores.items():
+                    jugadores = [nombre_jugador] 
+        mensaje = "Cargando datos..." #CHECAR ESTO  
         for letra in mensaje:
             print(letra, end="", flush=True)
             sleep(0.2)
